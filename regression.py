@@ -5,12 +5,23 @@ let state = Calc.getState();
 state.expressions.list = [];
 
 state.expressions.list.push(
-    {"type":"folder", "id":"10000", "title":"Hard Work", collapsed:true}
+    {"type":"folder", "id":"10000", "title":"Scary Stuff", collapsed:true}
 );
 """
 
 def createPush(x):
     return f'state.expressions.list.push({x});\n'
+
+def adjustSubscripts(loopIter, x):
+    startingNumber = 1
+    if loopIter > len(letters):
+        startingNumber = (loopIter - 1) // len(letters)
+        startingNumber *= 10
+
+    x = x.replace('A', str(startingNumber))
+    x = x.replace('B', str(startingNumber + 1))
+    x = x.replace('C', str(startingNumber + 2))
+    return x
 
 
 
@@ -68,20 +79,22 @@ regression = 'y_{1} \sim '
 
 letters = 'abcdefghijklmnopqrstuvwz'
 regressionMode = 'sine'
-n = 0
+depth = 25
 
-for letter in letters:
-    n += 1
-
+for n in range(1, depth+1):
     if regressionMode == 'sine': 
-        term = 'a_{1}\\sin\\left(a_{2}x_{1}-a_{3}\\right) +'
+        term = adjustSubscripts(n, 'a_{A}\\sin\\left(a_{B}x_{1}-a_{C}\\right) +')
     
     if regressionMode == 'poly':
-        term = 'a_{1}\\left(x_{1}-a_{2}\\right)^{__EXPONENT__} + '.replace('__EXPONENT__', str(n))
+        term = adjustSubscripts(n, 'a_{A}\\left(a_{B}x_{1}-a_{C}\\right)^{__EXPONENT__} + ')
+        term = term.replace('__EXPONENT__', str(n))
     
-    term = term.replace('a', letter)
+    letterIndex = (n-1) % len(letters)
+    term = term.replace('a', letters[letterIndex])
 
     regression += term
+
+    print(n, letters[letterIndex], term)
 
 regression += 'k'
 regressionObject = '{folderId: "10000", id: "5", hidden: false, latex: "{regression}", type: "expression", colorLatex:"c_{regcolor}"}'
@@ -102,10 +115,11 @@ color = '\033[0;93m'
 reset = '\033[0m'
 
 print(f'Mode:  {regressionMode}')
-print(f'Depth: {len(letters)}')
+print(f'Depth: {depth}')
 print()
 print(f'{color}/* START */{reset}')
 print()
 print(CODE)
 print()
 print(f'{color}/* END */{reset}')
+print()
